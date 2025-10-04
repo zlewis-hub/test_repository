@@ -1,2 +1,4 @@
-# test_repository
-test repository for great san4ozzz
+как открыть сайт
+1. откройте html файл
+2. нажмите справа в файле кнопку скачать
+3. откройте html файл через браузер
