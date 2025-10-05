@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Таблица погоды на 7 дней</title>
+<style>
+  table {
+    border-collapse: collapse;
+    width: 90%;
+    margin: 20px auto;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid #333;
+    padding: 8px;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  .forecast {
+    background-color: #ADD8E6; /* светло-синий для прогнозных дней */
+  }
+  caption {
+    caption-side: top;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px;
+  }
+</style>
+</head>
+<body>
+
+<table id="weatherTable">
+  <caption>Таблица погоды на 7 дней (прогноз выделен синим)</caption>
+  <thead>
+    <tr>
+      <th>Параметр</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id="temperatureRow"><td>Температура</td></tr>
+    <tr id="humidityRow"><td>Влажность</td></tr>
+    <tr id="windRow"><td>Ветер</td></tr>
+    <tr id="pressureRow"><td>Давление</td></tr>
+    <tr id="cloudRow"><td>Облачность</td></tr>
+  </tbody>
+</table>
+
+<script>
+// 🔹 Вводим данные только для первых 4 дней
+let dataInput = {
+  "temperature": ["20°C", "21°C", "22°C", "19°C"],
+  "humidity": ["60%", "58%", "55%", "70%"],
+  "wind": ["3 м/с", "5 м/с", "2 м/с", "4 м/с"],
+  "pressure": ["1015", "1013", "1010", "1012"],
+  "cloud": ["20%", "40%", "60%", "30%"]
+};
+
+// 🔹 Функция для генерации последних 3 дней с учетом тренда
+function extendDataTrend(arr, type) {
+  let numeric = arr.map(val => parseInt(val.replace("°C","").replace("%","").replace(" м/с","")));
+  for (let i = 4; i < 7; i++) {
+    let nextVal;
+    if (type === "temperature" || type === "pressure") {
+      // линейный тренд: разница между 1 и 4 днями
+      let a = (numeric[3] - numeric[0]) / 3;
+      nextVal = Math.round(numeric[3] + a + (Math.random()*2-1)); // небольшой шум
+    } else if (type === "humidity" || type === "cloud" || type === "wind") {
+      let avg = numeric.slice(-4).reduce((sum,val)=>sum+val,0)/4;
+      nextVal = Math.round(avg + (Math.random()*6-3));
+      if (type === "humidity" || type === "cloud") nextVal = Math.max(0, Math.min(100,nextVal));
+      if (type === "wind") nextVal = Math.max(0,nextVal);
+    }
+    numeric.push(nextVal);
+  }
+  // форматируем обратно
+  return numeric.map(val => {
+    if (type === "temperature") return val+"°C";
+    if (type === "humidity" || type === "cloud") return val+"%";
+    if (type === "wind") return val+" м/с";
+    if (type === "pressure") return val.toString();
+  });
+}
+
+// 🔹 Генерация полного набора данных
+let data = {
+  temperature: extendDataTrend(dataInput.temperature, "temperature"),
+  humidity: extendDataTrend(dataInput.humidity, "humidity"),
+  wind: extendDataTrend(dataInput.wind, "wind"),
+  pressure: extendDataTrend(dataInput.pressure, "pressure"),
+  cloud: extendDataTrend(dataInput.cloud, "cloud")
+};
+
+// 🔹 Заполняем таблицу
+function fillRow(rowId, values) {
+  let row = document.getElementById(rowId);
+  values.forEach((val, idx) => {
+    let td = document.createElement("td");
+    td.textContent = val;
+    if (idx >= 4) td.classList.add("forecast"); // прогнозные дни синим
+    row.appendChild(td);
+  });
+}
+
+fillRow("temperatureRow", data.temperature);
+fillRow("humidityRow", data.humidity);
+fillRow("windRow", data.wind);
+fillRow("pressureRow", data.pressure);
+fillRow("cloudRow", data.cloud);
+
+</script>
+</body>
+</html>
+
